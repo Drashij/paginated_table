@@ -113,7 +113,11 @@ export default {
   },
   watch: {
     sortBy(value) {
-      this.getEmployees(this.page, value);
+      if (this.search) {
+        this.filter(this.search);
+      } else {
+        this.getEmployees(this.page, value);
+      }
     },
   },
   data() {
@@ -159,9 +163,10 @@ export default {
       this.order = value ? "DESC" : "ASC";
     },
     async filter(p) {
+      console.log(this.sortBy);
       if (this.search !== "") {
         await serviceApi
-          .filterData(this.page, this.search)
+          .filterData(this.page, this.search, this.sortBy)
           .then((response) => {
             // console.log(response);
             this.employees = response.data.rows;
@@ -174,7 +179,7 @@ export default {
           })
           .catch(function (error) {
             console.log(error);
-          }); 
+          });
       } else {
         // console.log("Khali");
         this.getEmployees(this.page, this.sortBy);

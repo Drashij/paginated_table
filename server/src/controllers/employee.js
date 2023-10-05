@@ -43,8 +43,7 @@ const filterEmployees = async (req, res) => {
   try {
     const search = req.query.search;
     const skip = req.query.page;
-    const sort = req.query.sort || "firstname";
-    const dir = req.query.sort ? "DESC" : "ASC";
+    const [sort, dir] = req.query.sort.split(":") || ["firstname", "ASC"];
     const employees = await Employee.findAndCountAll({
       attributes: [
         "id",
