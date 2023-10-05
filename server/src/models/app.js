@@ -1,7 +1,8 @@
 const { Sequelize, DataTypes } = require("sequelize");
+require('dotenv').config()
 
 const sequelize = new Sequelize(
-  "postgres://afnkoxvm:suyRj4trsXigN1mWlYoSi9EovU1_XIT9@rain.db.elephantsql.com/afnkoxvm",
+  process.env.URL,
   { logging: false }
 );
 try {
