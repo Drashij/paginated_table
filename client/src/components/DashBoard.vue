@@ -37,7 +37,7 @@
               :class="isUpName ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"
               @click="
                 isUpName = !isUpName;
-                setSortingOrder('firstName', isUpName);
+                setSortingOrder('firstname', isUpName);
                 isUpEmployee = false;
                 isUpProjects = false;
                 isUpJoining = false;
@@ -87,7 +87,7 @@
       </tbody>
     </table>
     <pagination
-      :maxVisibleButtons="3"
+      :maxVisibleButtons="1"
       :totalPages="Math.ceil(count / 10)"
       :page="page"
       @pagechanged="onPageChange"
@@ -122,7 +122,7 @@ export default {
       employees: [],
       count: 1,
       order: "ASC",
-      sortByCol: "firstName",
+      sortByCol: "firstname",
       isUpEmployee: false,
       isUpName: false,
       isUpProjects: false,
@@ -132,9 +132,14 @@ export default {
   },
   methods: {
     onPageChange(page) {
-      this.page = page;
-
-      this.getEmployees(page, this.sortBy);
+      if (page <= Math.ceil(this.count / 10)) {
+        this.page = page;
+        if (this.search) {
+          this.filter(this.page, this.search);
+        } else {
+          this.getEmployees(this.page, this.sortBy);
+        }
+      }
     },
     getEmployees(page, sortBy) {
       serviceApi
@@ -155,19 +160,23 @@ export default {
     },
     async filter(p) {
       if (this.search !== "") {
-        console.log(this.search);
         await serviceApi
-          .filterData(this.search)
+          .filterData(this.page, this.search)
           .then((response) => {
-            console.log(response);
+            // console.log(response);
             this.employees = response.data.rows;
             this.count = response.data.count;
+
+            if (this.page > Math.ceil(this.count / 10) && this.count !== 0) {
+              this.page = 1;
+              this.filter(this.page, this.search);
+            }
           })
           .catch(function (error) {
             console.log(error);
-          });
+          }); 
       } else {
-        console.log("Khali");
+        // console.log("Khali");
         this.getEmployees(this.page, this.sortBy);
       }
     },

@@ -7,7 +7,7 @@ export default {
   getEmployees: function (page, sortBy) {
     return api.get(`/?sortBy=${sortBy}&page=${page}`);
   },
-  filterData: function (search) {
-    return api.get(`/filter?search=${search}`);
+  filterData: function (page, search) {
+    return api.get(`/filter?search=${search}&page=${page}`);
   },
 };

@@ -1,5 +1,6 @@
 <template>
   <nav aria-label="Page navigation example" v-if="totalPages">
+    <!-- <p>{{ pages.length }}</p> -->
     <ul class="pagination justify-content-center">
       <li class="page-item">
         <button
@@ -85,26 +86,15 @@ export default {
   },
   computed: {
     startPage() {
-      // When on the first page
-      if (this.page === 1) {
-        return 1;
-      }
-
-      // When on the last page
-      if (this.page === this.totalPages) {
-        return this.totalPages - this.maxVisibleButtons;
-      }
-
       // When inbetween
-      return this.page - 1;
+      return this.page;
     },
     pages() {
       const range = [];
 
       for (
         let i = this.startPage;
-        i <=
-        Math.min(this.startPage + this.maxVisibleButtons - 1, this.totalPages);
+        i <= Math.min(this.startPage, this.totalPages);
         i++
       ) {
         range.push({

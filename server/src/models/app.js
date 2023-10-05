@@ -1,9 +1,9 @@
 const { Sequelize, DataTypes } = require("sequelize");
-const sequelize = new Sequelize("employees", "root", "Dr@shi77", {
-  host: "localhost",
-  dialect: "mysql",
-  logging:false
-});
+
+const sequelize = new Sequelize(
+  "postgres://afnkoxvm:suyRj4trsXigN1mWlYoSi9EovU1_XIT9@rain.db.elephantsql.com/afnkoxvm",
+  { logging: false }
+);
 try {
   sequelize.authenticate();
   console.log("Connection has been established successfully.");

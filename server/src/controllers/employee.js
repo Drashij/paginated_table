@@ -4,19 +4,18 @@ const db = require("../models/app");
 var Employee = db.employee;
 const getEmployees = async (req, res) => {
   try {
-   
     const skip = req.query.page;
-    const [sort, dir] = req.query.sortBy.split(":") || ["firstName", "ASC"];
-    
+    const [sort, dir] = req.query.sortBy.split(":") || ["firstname", "ASC"];
+
     const employees = await Employee.findAll({
       attributes: [
         "id",
         [
           db.Sequelize.fn(
             "CONCAT",
-            db.Sequelize.col("firstName"),
+            db.Sequelize.col("firstname"),
             " ",
-            db.Sequelize.col("lastName")
+            db.Sequelize.col("lastname")
           ),
           "fullName",
         ],
@@ -32,7 +31,7 @@ const getEmployees = async (req, res) => {
       order: [[sort, dir]],
     });
     const amount = await Employee.count();
-   
+
     res.send({ employees, amount });
   } catch (e) {
     console.log(e);
@@ -44,7 +43,7 @@ const filterEmployees = async (req, res) => {
   try {
     const search = req.query.search;
     const skip = req.query.page;
-    const sort = req.query.sort || "firstName";
+    const sort = req.query.sort || "firstname";
     const dir = req.query.sort ? "DESC" : "ASC";
     const employees = await Employee.findAndCountAll({
       attributes: [
@@ -52,9 +51,9 @@ const filterEmployees = async (req, res) => {
         [
           db.Sequelize.fn(
             "CONCAT",
-            db.Sequelize.col("firstName"),
+            db.Sequelize.col("firstname"),
             " ",
-            db.Sequelize.col("lastName")
+            db.Sequelize.col("lastname")
           ),
           "fullName",
         ],
@@ -64,7 +63,6 @@ const filterEmployees = async (req, res) => {
         "designation",
         "projectCount",
         "joiningDate",
-        
       ],
       where: {
         [Op.or]: [
@@ -96,7 +94,7 @@ const filterEmployees = async (req, res) => {
           },
           {
             projectCount: {
-              [Op.like]: `%${search}%`,
+              [Op.eq]: search,
             },
           },
           {
@@ -110,13 +108,12 @@ const filterEmployees = async (req, res) => {
       offset: skip ? (skip - 1) * 10 : 0,
       order: [[sort, dir]],
     });
-   
+
     res.send(employees);
   } catch (e) {
     console.log(e);
     res.send("Not found");
   }
 };
-
 
 module.exports = { getEmployees, filterEmployees };

@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
       },
       projectCount: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
       },
       joiningDate: {
         type: DataTypes.STRING,
