@@ -5,45 +5,12 @@ var Employee = db.employee;
 const getEmployees = async (req, res) => {
   try {
     const skip = req.query.page;
-    const [sort, dir] = req.query.sortBy.split(":") || ["firstname", "ASC"];
-
-    const employees = await Employee.findAll({
-      attributes: [
-        "id",
-        [
-          db.Sequelize.fn(
-            "CONCAT",
-            db.Sequelize.col("firstname"),
-            " ",
-            db.Sequelize.col("lastname")
-          ),
-          "fullName",
-        ],
-        "email",
-        "empId",
-        "department",
-        "designation",
-        "projectCount",
-        "joiningDate",
-      ],
-      limit: 10,
-      offset: skip ? (skip - 1) * 10 : 0,
-      order: [[sort, dir]],
-    });
-    const amount = await Employee.count();
-
-    res.send({ employees, amount });
-  } catch (e) {
-    console.log(e);
-    res.send("Error");
-  }
-};
-
-const filterEmployees = async (req, res) => {
-  try {
     const search = req.query.search;
-    const skip = req.query.page;
-    const [sort, dir] = req.query.sort.split(":") || ["firstname", "ASC"];
+    const sort = JSON.parse(req.query.sortBy);
+    const sortArray = Object.keys(sort).map((key) => [key, sort[key]]);
+
+    console.log(sortArray);
+
     const employees = await Employee.findAndCountAll({
       attributes: [
         "id",
@@ -105,14 +72,16 @@ const filterEmployees = async (req, res) => {
       },
       limit: 10,
       offset: skip ? (skip - 1) * 10 : 0,
-      order: [[sort, dir]],
+      order: sortArray,
     });
 
-    res.send(employees);
+    const amount = await Employee.count();
+
+    res.send({ employees, amount });
   } catch (e) {
     console.log(e);
-    res.send("Not found");
+    res.send("Error");
   }
 };
 
-module.exports = { getEmployees, filterEmployees };
+module.exports = { getEmployees };

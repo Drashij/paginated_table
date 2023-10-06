@@ -1,18 +1,18 @@
 <template>
   <div>
-    <div class="input-group mb-2 d-flex justify-content-end">
+    <div class="input-group mb-2 d-flex justify-content-between">
+      <button class="btn btn-outline-dark mr-1" @click="resetFilter">
+        reset filter
+      </button>
       <input
         type="text"
-        placeholder="Recipient's username"
+        placeholder="search"
         aria-label="Recipient's username"
         aria-describedby="button-addon2"
         style="width: 20%"
         v-model="search"
-        @input="filter()"
+        @input="getEmployees(page, sortString, search)"
       />
-      <button class="btn btn-outline-primary" type="button" id="button-addon2">
-        <i class="bi bi-search"></i>
-      </button>
     </div>
 
     <table class="table table-hover table-bordered">
@@ -25,9 +25,6 @@
               @click="
                 isUpEmployee = !isUpEmployee;
                 setSortingOrder('empId', isUpEmployee);
-                isUpName = false;
-                isUpProjects = false;
-                isUpJoining = false;
               "
             ></i>
           </th>
@@ -38,9 +35,6 @@
               @click="
                 isUpName = !isUpName;
                 setSortingOrder('firstname', isUpName);
-                isUpEmployee = false;
-                isUpProjects = false;
-                isUpJoining = false;
               "
             ></i>
           </th>
@@ -53,9 +47,6 @@
               @click="
                 isUpProjects = !isUpProjects;
                 setSortingOrder('projectCount', isUpProjects);
-                isUpEmployee = false;
-                isUpName = false;
-                isUpJoining = false;
               "
             ></i>
           </th>
@@ -66,9 +57,6 @@
               @click="
                 isUpJoining = !isUpJoining;
                 setSortingOrder('joiningDate', isUpJoining);
-                isUpEmployee = false;
-                isUpName = false;
-                isUpProjects = false;
               "
             ></i>
           </th>
@@ -107,17 +95,20 @@ export default {
     pagination,
   },
   computed: {
-    sortBy() {
-      return [this.sortByCol, this.order].join(":");
+    sortString() {
+      return JSON.stringify(this.sortBy);
     },
   },
   watch: {
-    sortBy(value) {
-      if (this.search) {
-        this.filter(this.search);
-      } else {
-        this.getEmployees(this.page, value);
-      }
+    sortByCol(value) {
+      this.sortBy[value] = this.order;
+      console.log(this.sortBy);
+      this.getEmployees(this.page, this.sortString, this.search);
+    },
+    order(value) {
+      this.sortBy[this.sortByCol] = value;
+      console.log(this.sortBy);
+      this.getEmployees(this.page, this.sortString, this.search);
     },
   },
   data() {
@@ -132,25 +123,30 @@ export default {
       isUpProjects: false,
       isUpJoining: false,
       search: "",
+      sortBy: {},
     };
   },
   methods: {
     onPageChange(page) {
       if (page <= Math.ceil(this.count / 10)) {
         this.page = page;
-        if (this.search) {
-          this.filter(this.page, this.search);
-        } else {
-          this.getEmployees(this.page, this.sortBy);
-        }
+
+        this.getEmployees(this.page, this.sortString, this.search);
       }
     },
-    getEmployees(page, sortBy) {
+    getEmployees(page, sortString, search) {
+      console.log(sortString);
       serviceApi
-        .getEmployees(page, sortBy)
+        .getEmployees(page, sortString, search)
         .then((res) => {
-          this.employees = res.data.employees;
-          this.count = res.data.amount;
+          this.employees = res.data.employees.rows;
+          this.count = res.data.employees.count;
+          // console.log(res.data.employees);
+          if (this.page > Math.ceil(this.count / 10) && this.count !== 0) {
+            console.log("in fnvtion");
+            this.page = 1;
+            this.getEmployees(this.page, this.sortString, this.search);
+          }
         })
         .catch((error) => {
           console.log(error);
@@ -158,36 +154,23 @@ export default {
     },
 
     setSortingOrder(sortByCol, value) {
-      this.sortByCol = sortByCol;
-
+      // this.sortByCol = sortByCol;
       this.order = value ? "DESC" : "ASC";
+      this.sortByCol = sortByCol;
+      this.value = value;
     },
-    async filter(p) {
-      console.log(this.sortBy);
-      if (this.search !== "") {
-        await serviceApi
-          .filterData(this.page, this.search, this.sortBy)
-          .then((response) => {
-            // console.log(response);
-            this.employees = response.data.rows;
-            this.count = response.data.count;
 
-            if (this.page > Math.ceil(this.count / 10) && this.count !== 0) {
-              this.page = 1;
-              this.filter(this.page, this.search);
-            }
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
-      } else {
-        // console.log("Khali");
-        this.getEmployees(this.page, this.sortBy);
-      }
+    resetFilter() {
+      this.isUpEmployee = false;
+      this.isUpJoining = false;
+      this.isUpName = false;
+      this.isUpProjects = false;
+      this.sortBy = {};
+      this.getEmployees(this.page, this.sortString, this.search);
     },
   },
   created() {
-    this.getEmployees(this.page, this.sortBy);
+    this.getEmployees(this.page, this.sortString, this.search);
   },
 };
 </script>
